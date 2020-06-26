@@ -1,21 +1,22 @@
-'use-strict'
+'use-strict';
 
+/* eslint strict: ["error", "never"] */
 module.exports = function (api) {
 	api.cache(true);
 
 	const presets = [
-		["@babel/preset-env",
+		['@babel/preset-env',
 			{
-				"targets": {
-					"esmodules": true
-				}
+				targets: {
+					esmodules: true,
+				},
 			}],
-		"@babel/preset-react"
+		'@babel/preset-react',
 	];
-	const plugins = ["@babel/plugin-transform-react-jsx"];
+	const plugins = ['@babel/plugin-transform-react-jsx'];
 
 	return {
 		presets,
-		plugins
+		plugins,
 	};
-}
+};

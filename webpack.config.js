@@ -1,15 +1,14 @@
 'use-strict';
 
-const path = require("path");
+const path = require('path');
 const merge = require('webpack-merge');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const TerserJSPlugin = require("terser-webpack-plugin");
-const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const base = {
-	target: "web",
+	target: 'web',
 	context: path.resolve('src'),
 	// entry: // // path.resolve("src/index.js"),
 	entry: [
@@ -17,15 +16,15 @@ const base = {
 		'./index.js',
 	],
 	output: {
-		path: path.resolve("dist"),
-		publicPath: "/",
-		filename: "main.js",
+		path: path.resolve('dist'),
+		publicPath: '/',
+		filename: 'main.js',
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
-			title: "Production",
-			template: path.resolve("src/index.html"),
-			favicon: path.resolve("src/favicon.ico"),
+			title: 'Production',
+			template: path.resolve('src/index.html'),
+			favicon: path.resolve('src/favicon.ico'),
 		}),
 	],
 	module: {
@@ -34,13 +33,15 @@ const base = {
 			{
 				test: /\.(js|jsx)$/,
 				exclude: /node_modules/,
-				use: {
-					loader: 'babel-loader',
-					options: {
-						sourceMap: true,
-						rootMode: "upward"
+				use: [
+					{
+						loader: 'babel-loader',
+						options: {
+							sourceMap: true,
+							rootMode: 'upward',
+						},
 					},
-				},
+				],
 			},
 			{
 				test: /\.css$/,
@@ -61,18 +62,24 @@ const base = {
 							sourceMap: true,
 							localsConvention: 'camelCase',
 							modules: {
-								localIdentName: '[path][name]_[local]--[hash:base64:5]'
-							}
-						}
+								localIdentName: '[path][name]_[local]--[hash:base64:5]',
+							},
+						},
 					},
 					'postcss-loader',
-					"sass-loader",
+					'sass-loader',
+				],
+			},
+			{
+				test: /\.(png|svg|jpg|gif)(\?v=[0-9]\.[0-9]\.[0-9])?$/i,
+				exclude: /node_modules/,
+				use: [
+					'file-loader',
 				],
 			},
 		],
 	},
 };
-
 
 const environments = {
 	development: {
@@ -84,7 +91,7 @@ const environments = {
 			open: true,
 			historyApiFallback: true,
 			disableHostCheck: true,
-			headers: { "Access-Control-Allow-Origin": "*" },
+			headers: { 'Access-Control-Allow-Origin': '*' },
 			https: false,
 		},
 	},
@@ -106,21 +113,19 @@ const environments = {
 					cssProcessorPluginOptions: {
 						preset: ['default', { discardComments: { removeAll: true } }],
 					},
-					canPrint: true
-				})
+					canPrint: true,
+				}),
 			],
 		},
 		plugins: [
 			new MiniCssExtractPlugin({
-				filename: "[name].css",
-				chunkFilename: "[id].css",
+				filename: '[name].css',
+				chunkFilename: '[id].css',
 			}),
 		],
 	},
 };
 
-
 module.exports = function webpackConfig(env) {
 	return merge(base, environments[env]);
 };
-
