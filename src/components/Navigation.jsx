@@ -11,8 +11,8 @@ const Navigation = () => (
 			<img
 				alt=""
 				src="/favicon.ico"
-				width="32"
-				height="32"
+				width="30"
+				height="30"
 				className="d-inline-block align-top"
 				draggable="false"
 			/>{' '}
