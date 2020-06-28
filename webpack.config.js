@@ -1,16 +1,18 @@
 'use-strict';
 
+/* eslint strict: ["error", "never"] */
 const path = require('path');
 const merge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const cssNano = require('cssnano');
 
 const base = {
 	target: 'web',
 	context: path.resolve('src'),
-	// entry: // // path.resolve("src/index.js"),
+	// entry: path.resolve("src/index.js"),
 	entry: [
 		'bootstrap/dist/css/bootstrap.css',
 		'./index.js',
@@ -33,15 +35,13 @@ const base = {
 			{
 				test: /\.(js|jsx)$/,
 				exclude: /node_modules/,
-				use: [
-					{
-						loader: 'babel-loader',
-						options: {
-							sourceMap: true,
-							rootMode: 'upward',
-						},
+				use: {
+					loader: 'babel-loader',
+					options: {
+						sourceMap: true,
+						rootMode: 'upward',
 					},
-				],
+				},
 			},
 			{
 				test: /\.css$/,
@@ -71,7 +71,7 @@ const base = {
 				],
 			},
 			{
-				test: /\.(png|svg|jpg|gif)(\?v=[0-9]\.[0-9]\.[0-9])?$/i,
+				test: /\.(png|svg|jpe?g|gif)(\?v=[0-9]\.[0-9]\.[0-9])?$/i,
 				exclude: /node_modules/,
 				use: [
 					'file-loader',
@@ -107,7 +107,7 @@ const environments = {
 				new TerserJSPlugin({}),
 				new OptimizeCssAssetsPlugin({
 					assetNameRegExp: /\.css$/g,
-					cssProcessor: require('cssnano')({
+					cssProcessor: cssNano({
 						preset: 'default',
 					}),
 					cssProcessorPluginOptions: {
