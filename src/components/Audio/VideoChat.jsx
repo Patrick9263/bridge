@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
 
+// https://github.com/coding-with-chaim/react-video-chat
+
 function VideoChat() {
 	const [yourID, setYourID] = useState('');
 	const [users, setUsers] = useState({});
