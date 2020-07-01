@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
+import Button from 'react-bootstrap/Button';
+
+import IncomingCall from './IncomingCall.jsx';
 
 // https://github.com/coding-with-chaim/react-video-chat
 
@@ -80,6 +83,7 @@ function VideoChat() {
 
 	function acceptCall() {
 		setCallAccepted(true);
+		setReceivingCall(false);
 		const peer = new Peer({
 			initiator: false,
 			trickle: false,
@@ -96,6 +100,10 @@ function VideoChat() {
 		peer.signal(callerSignal);
 	}
 
+	function ignoreCall() {
+		setReceivingCall(false);
+	}
+
 	let UserVideo;
 	if (stream) {
 		UserVideo = (
@@ -110,17 +118,17 @@ function VideoChat() {
 		);
 	}
 
-	let incomingCall;
-	if (receivingCall) {
-		incomingCall = (
-			<div>
-				<h1>{caller} is calling you</h1>
-				<button onClick={acceptCall}>Accept</button>
-			</div>
-		);
-	}
 	return (
 		<div>
+			{receivingCall
+				? <IncomingCall
+					caller={caller}
+					acceptCall={acceptCall}
+					ignoreCall={ignoreCall}
+				/>
+				: ''
+			}
+
 			<div>
 				{UserVideo}
 				{PartnerVideo}
@@ -131,12 +139,14 @@ function VideoChat() {
 						return null;
 					}
 					return (
-						<button key={key} onClick={() => callPeer(key)}>Call {key}</button>
+						<Button
+							key={key}
+							onClick={() => callPeer(key)}
+						>
+							Call {key}
+						</Button>
 					);
 				})}
-			</div>
-			<div>
-				{incomingCall}
 			</div>
 		</div>
 	);
