@@ -5,8 +5,8 @@ import {
 import { NavLink } from 'react-router-dom';
 import styles from './Navigation.scss';
 
-const Navigation = () => (
-	<Navbar bg="dark" variant="dark" expand="lg" className={styles.noselect} >
+const Navigation = props => (
+	<Navbar bg="dark" variant="dark" expand="lg" className={styles.noselect} expand >
 		<Navbar.Brand href="#home">
 			<img
 				alt=""
@@ -50,10 +50,10 @@ const Navigation = () => (
 				</NavDropdown>
 
 			</Nav>
-			<Form inline>
-				<FormControl type="text" placeholder="Search" className="mr-sm-2" />
-				<Button variant="outline-info">Search</Button>
-			</Form>
+
+			<NavItem style={{ color: 'grey' }}>
+				{props.id}
+			</NavItem>
 		</Navbar.Collapse>
 	</Navbar>
 );

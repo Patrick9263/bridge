@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
-import Button from 'react-bootstrap/Button';
 
 import IncomingCall from './IncomingCall.jsx';
+import FriendsList from './FriendsList.jsx';
 
 // https://github.com/coding-with-chaim/react-video-chat
 
-function VideoChat() {
+const VideoChat = props => {
 	const [yourID, setYourID] = useState('');
 	const [users, setUsers] = useState({});
 	const [stream, setStream] = useState();
@@ -22,28 +22,30 @@ function VideoChat() {
 
 	useEffect(() => {
 		socket.current = io.connect('localhost:8000/');
-		navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(currentStream => {
-			setStream(currentStream);
-			if (userVideo.current) {
-				userVideo.current.srcObject = currentStream;
-			}
-		});
+		navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+			.then(currentStream => {
+				setStream(currentStream);
+				if (userVideo.current) {
+					userVideo.current.srcObject = currentStream;
+				}
+			});
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
+			props.setId(id);
 		});
 		socket.current.on('allUsers', currentUsers => {
 			setUsers(currentUsers);
 		});
 
-		socket.current.on('hey', data => {
+		socket.current.on('callingUser', data => {
 			setReceivingCall(true);
 			setCaller(data.from);
 			setCallerSignal(data.signal);
 		});
 	}, []);
 
-	function callPeer(id) {
+	const callPeer = id => {
 		const peer = new Peer({
 			initiator: true,
 			trickle: false,
@@ -79,9 +81,13 @@ function VideoChat() {
 			setCallAccepted(true);
 			peer.signal(signal);
 		});
-	}
 
-	function acceptCall() {
+		socket.current.on('callIgnored', () => {
+			setCallAccepted(false);
+		});
+	};
+
+	const acceptCall = () => {
 		setCallAccepted(true);
 		setReceivingCall(false);
 		const peer = new Peer({
@@ -98,11 +104,20 @@ function VideoChat() {
 		});
 
 		peer.signal(callerSignal);
-	}
+	};
 
-	function ignoreCall() {
+	const ignoreCall = () => {
+		setCallAccepted(false);
 		setReceivingCall(false);
-	}
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		});
+		peer.on('signal', () => {
+			socket.current.emit('ignoreCall', { to: caller });
+		});
+	};
 
 	let UserVideo;
 	if (stream) {
@@ -128,28 +143,13 @@ function VideoChat() {
 				/>
 				: ''
 			}
+			<FriendsList users={users} yourID={yourID} callPeer={callPeer} />
 
-			<div>
-				{UserVideo}
-				{PartnerVideo}
-			</div>
-			<div>
-				{Object.keys(users).map(key => {
-					if (key === yourID) {
-						return null;
-					}
-					return (
-						<Button
-							key={key}
-							onClick={() => callPeer(key)}
-						>
-							Call {key}
-						</Button>
-					);
-				})}
-			</div>
+			{UserVideo}
+			{PartnerVideo}
+
 		</div>
 	);
-}
+};
 
 export default VideoChat;

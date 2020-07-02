@@ -18,19 +18,15 @@ const toast = {
 };
 
 const IncomingCall = props => {
-	const [show, setShow] = useState(true);
+	const [showToast, setShowToast] = useState(true);
 
-	const toggleShow = () => setShow(!show);
-
-	const handleClose = () => {
+	const handleIgnore = () => {
 		props.ignoreCall();
-		setShow(false);
-		toggleShow();
+		setShowToast(false);
 	};
 	const handleAccept = () => {
 		props.acceptCall();
-		setShow(false);
-		toggleShow();
+		setShowToast(false);
 	};
 
 	return (
@@ -43,7 +39,7 @@ const IncomingCall = props => {
 				<div
 					style={toast}
 				>
-					<Toast show={show} onClose={toggleShow}>
+					<Toast show={showToast}>
 						<Toast.Header>
 							<img src="holder.js/20x20?text=%20" className="rounded mr-2" alt="" />
 							<strong className="mr-auto">Incoming call</strong>
@@ -53,7 +49,7 @@ const IncomingCall = props => {
 							{props.caller}
 							<br />
 							<br />
-							<Button variant="danger" size="sm" onClick={handleClose} style={{ marginRight: 10 }}>
+							<Button variant="danger" size="sm" onClick={handleIgnore} style={{ marginRight: 10 }}>
 							Ignore
 							</Button>
 							<Button variant="success" size="sm" onClick={handleAccept}>
