@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
 
+import { Button, ListGroup, Toast } from 'react-bootstrap';
 import IncomingCall from './IncomingCall.jsx';
 import FriendsList from './FriendsList.jsx';
 
@@ -22,7 +23,7 @@ const VideoChat = props => {
 
 	useEffect(() => {
 		socket.current = io.connect('localhost:8000/');
-		navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 			.then(currentStream => {
 				setStream(currentStream);
 				if (userVideo.current) {
@@ -89,7 +90,6 @@ const VideoChat = props => {
 
 	const acceptCall = () => {
 		setCallAccepted(true);
-		setReceivingCall(false);
 		const peer = new Peer({
 			initiator: false,
 			trickle: false,
@@ -119,34 +119,80 @@ const VideoChat = props => {
 		});
 	};
 
-	let UserVideo;
-	if (stream) {
-		UserVideo = (
-			<video playsInline muted ref={userVideo} autoPlay />
-		);
-	}
+	const [showToast, setShowToast] = useState(true);
+	const [timeStamp, setTimeStamp] = useState(
+		new Date().toLocaleDateString(undefined, {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+		}),
+	);
+	const container = {
+		position: 'absolute',
+		top: 55,
+		right: 0,
+		minHeight: '200px',
+	};
+	const toast = {
+		position: 'absolute',
+		top: 0,
+		right: 0,
+		minWidth: '300px',
+	};
+	const incomingCall = (
+		<div>
+			<h1>{caller} is calling you</h1>
+			<button onClick={acceptCall}>Accept</button>
+		</div>
+	);
 
-	let PartnerVideo;
-	if (callAccepted) {
-		PartnerVideo = (
-			<video playsInline ref={partnerVideo} autoPlay />
-		);
-	}
+	const styles = {
+		userList: {
+			display: 'flex',
+			flexDirection: 'column',
+			// borderStyle: 'solid',
+			// borderColor: 'black',
+			// borderWidth: '1px',
+			width: '40%',
+		},
+		friend: {
+			display: 'flex',
+			flexDirection: 'row',
+			justifyContent: 'space-between',
+			height: '100%',
+			// borderStyle: 'solid',
+			// borderColor: 'black',
+			// borderWidth: '1px',
+		},
+	};
+	const userList = (
+		Object.keys(users).map(key => {
+			if (key !== yourID) {
+				return (
+					<ListGroup.Item key={`${key}_`} >
+						<div key={`${key}__`} style={styles.friend} >
+							<p key={`${key}___`}>{key}</p>
+							<Button
+								key={key}
+								variant="success"
+								onClick={() => callPeer(key)}
+								style={{ width: '50' }}
+							>
+								Call
+							</Button>
+						</div>
+					</ListGroup.Item>
+				);
+			}
+			return '';
+		}));
 
 	return (
 		<div>
-			{(receivingCall && (caller !== ''))
-				? <IncomingCall
-					caller={caller}
-					acceptCall={acceptCall}
-					ignoreCall={ignoreCall}
-				/>
-				: ''
-			}
-			<FriendsList users={users} yourID={yourID} callPeer={callPeer} />
-
-			{UserVideo}
-			{PartnerVideo}
+			{receivingCall ? incomingCall : ''}
+			{userList}
+			{stream ? <video playsInline muted ref={userVideo} autoPlay /> : ''}
+			{callAccepted ? <video playsInline ref={partnerVideo} autoPlay /> : ''}
 
 		</div>
 	);

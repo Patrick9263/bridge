@@ -5,8 +5,8 @@
 	"private": true,
 	"proxy": "http://localhost:8000",
 	"scripts": {
-		"start": "NODE_ENV=development webpack-dev-server --env=development & (node src/server/server.js)",
-		"startNoServer": "NODE_ENV=development webpack-dev-server --env=development",
+		"start": "NODE_ENV=development webpack-dev-server --env=development",
+		"server": "node src/server/server.js",
 		"hotStart": "NODE_ENV=development webpack-dev-server --env=development --hot --host 0.0.0.0",
 		"build": "NODE_ENV=production webpack --env=production"
 	},
