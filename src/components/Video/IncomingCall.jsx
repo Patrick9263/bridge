@@ -19,6 +19,13 @@ const toast = {
 
 const IncomingCall = props => {
 	const [showToast, setShowToast] = useState(true);
+	const [timeStamp, setTimeStamp] = useState(
+		new Date().toLocaleDateString(undefined, {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+		}),
+	);
 
 	const handleIgnore = () => {
 		props.ignoreCall();
@@ -31,19 +38,13 @@ const IncomingCall = props => {
 
 	return (
 		<>
-			<div
-				aria-live="polite"
-				aria-atomic="true"
-				style={container}
-			>
-				<div
-					style={toast}
-				>
+			<div aria-live="polite" aria-atomic="true" style={container}>
+				<div style={toast}>
 					<Toast show={showToast}>
 						<Toast.Header>
 							<img src="holder.js/20x20?text=%20" className="rounded mr-2" alt="" />
 							<strong className="mr-auto">Incoming call</strong>
-							<small>just now</small>
+							<small>{timeStamp}</small>
 						</Toast.Header>
 						<Toast.Body>
 							{props.caller}

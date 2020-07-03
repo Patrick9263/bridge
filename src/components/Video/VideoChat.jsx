@@ -135,7 +135,7 @@ const VideoChat = props => {
 
 	return (
 		<div>
-			{receivingCall
+			{(receivingCall && (caller !== ''))
 				? <IncomingCall
 					caller={caller}
 					acceptCall={acceptCall}

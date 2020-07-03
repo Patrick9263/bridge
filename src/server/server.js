@@ -10,6 +10,11 @@ const CreateSocket = require('socket.io');
 const io = CreateSocket(server);
 
 const users = {};
+console.log('\n\n'
++ '---------------------------\n'
++ '    Socket.io connected    \n'
++ '---------------------------\n'
++ '\n\n');
 
 io.on('connection', socket => {
 	if (!users[socket.id]) {
@@ -29,10 +34,12 @@ io.on('connection', socket => {
 		io.to(data.userToCall).emit('callingUser', {
 			signal: data.signalData, from: data.from,
 		});
+		console.log('user is calling');
 	});
 
 	socket.on('acceptCall', data => {
 		io.to(data.to).emit('callAccepted', data.signal);
+		console.log('user accepted');
 	});
 
 	socket.on('ignoreCall', data => {
