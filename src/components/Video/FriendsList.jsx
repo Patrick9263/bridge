@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, ListGroup } from 'react-bootstrap';
 
 const FriendsList = props => {
-	const [userList, setUserList] = useState();
+	const [userList, setUserList] = useState('');
 
 	const styles = {
 		userList: {
@@ -44,7 +44,7 @@ const FriendsList = props => {
 					</ListGroup.Item>
 				);
 			}
-			return null;
+			return '';
 		}));
 	}, [props.users]);
 
@@ -56,7 +56,9 @@ const FriendsList = props => {
 };
 
 FriendsList.propTypes = {
-
+	users:	PropTypes.object,
+	yourID:	PropTypes.string,
+	callPeer:	PropTypes.func,
 };
 
 export default FriendsList;

@@ -8,6 +8,10 @@ import FriendsList from './FriendsList.jsx';
 
 // https://github.com/coding-with-chaim/react-video-chat
 
+// https://reactjs.org/docs/context.html
+// https://reactjs.org/docs/composition-vs-inheritance.html
+// https://reactjs.org/docs/render-props.html
+
 const VideoChat = props => {
 	const [yourID, setYourID] = useState('');
 	const [users, setUsers] = useState({});
