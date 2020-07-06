@@ -123,81 +123,15 @@ const VideoChat = props => {
 		});
 	};
 
-	const [showToast, setShowToast] = useState(true);
-	const [timeStamp, setTimeStamp] = useState(
-		new Date().toLocaleDateString(undefined, {
-			hour: '2-digit',
-			minute: '2-digit',
-			second: '2-digit',
-		}),
-	);
-	const container = {
-		position: 'absolute',
-		top: 55,
-		right: 0,
-		minHeight: '200px',
-	};
-	const toast = {
-		position: 'absolute',
-		top: 0,
-		right: 0,
-		minWidth: '300px',
-	};
-	const incomingCall = (
-		<div>
-			<h1>{caller} is calling you</h1>
-			<button onClick={acceptCall}>Accept</button>
-		</div>
-	);
-
-	const styles = {
-		userList: {
-			display: 'flex',
-			flexDirection: 'column',
-			// borderStyle: 'solid',
-			// borderColor: 'black',
-			// borderWidth: '1px',
-			width: '40%',
-		},
-		friend: {
-			display: 'flex',
-			flexDirection: 'row',
-			justifyContent: 'space-between',
-			height: '100%',
-			// borderStyle: 'solid',
-			// borderColor: 'black',
-			// borderWidth: '1px',
-		},
-	};
-	const userList = (
-		Object.keys(users).map(key => {
-			if (key !== yourID) {
-				return (
-					<ListGroup.Item key={`${key}_`} >
-						<div key={`${key}__`} style={styles.friend} >
-							<p key={`${key}___`}>{key}</p>
-							<Button
-								key={key}
-								variant="success"
-								onClick={() => callPeer(key)}
-								style={{ width: '50' }}
-							>
-								Call
-							</Button>
-						</div>
-					</ListGroup.Item>
-				);
-			}
-			return '';
-		}));
-
 	return (
 		<div>
-			{receivingCall ? incomingCall : ''}
-			{userList}
+			{receivingCall
+				? <IncomingCall ignoreCall={ignoreCall} acceptCall={acceptCall} caller={caller} />
+				: ''
+			}
+			<FriendsList users={users} yourID={yourID} callPeer={callPeer} />
 			{stream ? <video playsInline muted ref={userVideo} autoPlay /> : ''}
 			{callAccepted ? <video playsInline ref={partnerVideo} autoPlay /> : ''}
-
 		</div>
 	);
 };

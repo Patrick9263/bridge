@@ -46,7 +46,7 @@ const FriendsList = props => {
 			}
 			return '';
 		}));
-	}, [props.users]);
+	}, [props.users, props.callPeer, props.yourID]);
 
 	return (
 		<ListGroup style={styles.userList}>
