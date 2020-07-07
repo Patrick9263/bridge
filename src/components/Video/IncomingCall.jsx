@@ -19,13 +19,11 @@ const toast = {
 
 const IncomingCall = props => {
 	const [showToast, setShowToast] = useState(true);
-	const [timeStamp, setTimeStamp] = useState(
-		new Date().toLocaleDateString(undefined, {
-			hour: '2-digit',
-			minute: '2-digit',
-			second: '2-digit',
-		}),
-	);
+	const date = new Date();
+	// eslint-disable-next-line prefer-template
+	const timeStamp = date.getHours().toString()
+	+ ':' + date.getMinutes().toString()
+	+ ':' + date.getSeconds().toString();
 
 	const handleIgnore = () => {
 		props.ignoreCall();

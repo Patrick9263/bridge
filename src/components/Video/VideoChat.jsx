@@ -25,7 +25,7 @@ const VideoChat = props => {
 	const partnerVideo = useRef();
 	const socket = useRef();
 
-	useEffect(() => {
+	const initSocket = () => {
 		socket.current = io.connect('localhost:8000/');
 		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 			.then(currentStream => {
@@ -48,7 +48,16 @@ const VideoChat = props => {
 			setCaller(data.from);
 			setCallerSignal(data.signal);
 		});
-	}, []);
+
+		socket.current.on('callIgnored', data => {
+			setReceivingCall(false);
+			setCaller(data.from);
+			setCallerSignal(data.signal);
+			console.log('call ignored');
+		});
+	};
+
+	useEffect(() => { initSocket(); }, []);
 
 	const callPeer = id => {
 		const peer = new Peer({
@@ -73,7 +82,7 @@ const VideoChat = props => {
 		});
 
 		peer.on('signal', data => {
-			socket.current.emit('callUser', { userToCall: id, signalData: data, from: yourID });
+			socket.current.emit('callUser', { userIdToCall: id, signalData: data, from: yourID });
 		});
 
 		peer.on('stream', currentStream => {
@@ -85,10 +94,6 @@ const VideoChat = props => {
 		socket.current.on('callAccepted', signal => {
 			setCallAccepted(true);
 			peer.signal(signal);
-		});
-
-		socket.current.on('callIgnored', () => {
-			setCallAccepted(false);
 		});
 	};
 
@@ -102,15 +107,26 @@ const VideoChat = props => {
 		peer.on('signal', data => {
 			socket.current.emit('acceptCall', { signal: data, to: caller });
 		});
-
 		peer.on('stream', currentStream => {
 			partnerVideo.current.srcObject = currentStream;
 		});
-
 		peer.signal(callerSignal);
 	};
 
 	const ignoreCall = () => {
+		setCallAccepted(false);
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+		});
+		peer.on('signal', data => {
+			socket.current.emit('ignoreCall', { signal: data, to: caller });
+		});
+		peer.signal(callerSignal);
+		setReceivingCall(false);
+	};
+
+	const endCall = () => {
 		setCallAccepted(false);
 		setReceivingCall(false);
 		const peer = new Peer({
@@ -119,7 +135,7 @@ const VideoChat = props => {
 			stream,
 		});
 		peer.on('signal', () => {
-			socket.current.emit('ignoreCall', { to: caller });
+			socket.current.emit('endCall', { to: caller });
 		});
 	};
 
