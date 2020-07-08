@@ -36,7 +36,7 @@ io.on('connection', socket => {
 		io.to(data.userIdToCall).emit('callingUser', {
 			signal: data.signalData, from: data.from,
 		});
-		console.log(`user ${socket.id} is calling`);
+		// console.log(`user ${socket.id} is calling`);
 	});
 
 	// User accepts call
@@ -50,12 +50,14 @@ io.on('connection', socket => {
 		io.to(data.to).emit('callIgnored', {
 			signal: data.signal, from: data.from,
 		});
-		console.log(`user ${socket.id} ignored call`);
+		// console.log(`user ${socket.id} ignored call`);
 	});
 
 	// User ends call
 	socket.on('endCall', data => {
-		io.to(data.to).emit('callEnded', data.signal);
+		io.to(data.to).emit('callEnded', {
+			signal: data.signal, from: data.from,
+		});
 		console.log(`user ${socket.id} ended call.`);
 	});
 });
