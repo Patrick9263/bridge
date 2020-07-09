@@ -33,6 +33,15 @@ const Navigation = props => (
 				</NavItem>
 				<NavItem>
 					<NavLink
+						exact to="/chat"
+						className="nav-link"
+						activeClassName="active"
+						draggable="false"
+					>Login
+					</NavLink>
+				</NavItem>
+				<NavItem>
+					<NavLink
 						exact to="/about"
 						className="nav-link"
 						activeClassName="active"

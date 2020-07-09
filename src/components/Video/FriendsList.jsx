@@ -12,7 +12,7 @@ const FriendsList = props => {
 			// borderStyle: 'solid',
 			// borderColor: 'black',
 			// borderWidth: '1px',
-			width: '40%',
+			width: '100%',
 		},
 		friend: {
 			display: 'flex',
@@ -38,7 +38,7 @@ const FriendsList = props => {
 								onClick={() => props.callPeer(key)}
 								style={{ width: '50' }}
 							>
-						Call
+								Chat
 							</Button>
 						</div>
 					</ListGroup.Item>

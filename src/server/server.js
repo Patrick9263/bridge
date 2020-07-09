@@ -33,7 +33,7 @@ io.on('connection', socket => {
 
 	// User starts calling
 	socket.on('callUser', data => {
-		io.to(data.userIdToCall).emit('callingUser', {
+		io.to(data.userIdToCall).emit('receivingCall', {
 			signal: data.signalData, from: data.from,
 		});
 		// console.log(`user ${socket.id} is calling`);
