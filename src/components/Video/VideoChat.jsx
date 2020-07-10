@@ -5,6 +5,7 @@ import Peer from 'simple-peer';
 import { Button } from 'react-bootstrap';
 import IncomingCall from './IncomingCall.jsx';
 import FriendsList from './FriendsList.jsx';
+import ChatWindow from './ChatWindow.jsx';
 
 // https://github.com/coding-with-chaim/react-video-chat
 
@@ -20,32 +21,54 @@ const VideoChat = props => {
 	const [caller, setCaller] = useState('');
 	const [callerSignal, setCallerSignal] = useState();
 	const [callAccepted, setCallAccepted] = useState(false);
+	const [showVideo, setShowVideo] = useState(false);
+
+	const config = {
+		iceServers: [
+			{
+				urls: 'stun:numb.viagenie.ca',
+				username: 'sultan1640@gmail.com',
+				credential: '98376683',
+			},
+			{
+				urls: 'turn:numb.viagenie.ca',
+				username: 'sultan1640@gmail.com',
+				credential: '98376683',
+			},
+		],
+	};
+
+	const allPeers = {
+		startCall: new Peer({
+			initiator: true,
+			trickle: false,
+			config,
+			stream,
+		}),
+		acceptCall: new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		}),
+		ignoreCall: new Peer({
+			initiator: false,
+			trickle: false,
+		}),
+		endCall: new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		}),
+	};
 
 	const userVideo = useRef();
 	const partnerVideo = useRef();
 	const socket = useRef();
 
 	const callPeer = id => {
-		const peer = new Peer({
-			initiator: true,
-			trickle: false,
-			config: {
-
-				iceServers: [
-					{
-						urls: 'stun:numb.viagenie.ca',
-						username: 'sultan1640@gmail.com',
-						credential: '98376683',
-					},
-					{
-						urls: 'turn:numb.viagenie.ca',
-						username: 'sultan1640@gmail.com',
-						credential: '98376683',
-					},
-				],
-			},
-			stream,
-		});
+		const peer = allPeers.startCall;
+		peer.on('close', () => { peer.destroy(); });
+		peer.on('error', () => { console.log('disconnected from peer'); });
 
 		peer.on('signal', data => {
 			socket.current.emit('callUser', { userIdToCall: id, signalData: data, from: yourID });
@@ -65,11 +88,10 @@ const VideoChat = props => {
 
 	const acceptCall = () => {
 		setCallAccepted(true);
-		const peer = new Peer({
-			initiator: false,
-			trickle: false,
-			stream,
-		});
+		const peer = allPeers.acceptCall;
+		peer.on('close', () => { peer.destroy(); });
+		peer.on('error', () => { console.log('disconnected from peer'); });
+
 		peer.on('signal', data => {
 			socket.current.emit('acceptCall', { signal: data, to: caller });
 		});
@@ -81,10 +103,9 @@ const VideoChat = props => {
 
 	const ignoreCall = () => {
 		setCallAccepted(false);
-		const peer = new Peer({
-			initiator: false,
-			trickle: false,
-		});
+		const peer = allPeers.ignoreCall;
+		peer.on('close', () => { peer.destroy(); });
+		peer.on('error', () => { console.log('disconnected from peer'); });
 		peer.on('signal', data => {
 			socket.current.emit('ignoreCall', { signal: data, to: caller });
 		});
@@ -95,21 +116,26 @@ const VideoChat = props => {
 	const endCall = () => {
 		setCallAccepted(false);
 		setReceivingCall(false);
-		const peer = new Peer({
-			initiator: false,
-			trickle: false,
-			stream,
-		});
+		const peer = allPeers.endCall;
+		peer.on('close', () => { peer.destroy(); });
+		peer.on('error', () => { console.log('disconnected from peer'); });
 		peer.on('signal', () => {
 			socket.current.emit('endCall', { to: caller });
 		});
+
+		Object.keys(allPeers).forEach(p => { allPeers[p].destroy(); });
 	};
 
 	const incomingVideo = () => {
 		if (callAccepted) {
 			return (
 				<>
-					<video playsInline ref={partnerVideo} autoPlay />
+					<video
+						playsInline
+						ref={partnerVideo}
+						autoPlay
+						style={{ height: 300, width: 'auto' }}
+					/>
 					<Button variant="danger" onClick={endCall}>End Call</Button>
 				</>
 			);
@@ -119,13 +145,13 @@ const VideoChat = props => {
 
 	const initSocket = () => {
 		socket.current = io.connect('localhost:8000/');
-		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-			.then(currentStream => {
-				setStream(currentStream);
-				if (userVideo.current) {
-					userVideo.current.srcObject = currentStream;
-				}
-			});
+		// navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+		// 	.then(currentStream => {
+		// 		setStream(currentStream);
+		// 		if (userVideo.current) {
+		// 			userVideo.current.srcObject = currentStream;
+		// 		}
+		// 	});
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
@@ -135,7 +161,7 @@ const VideoChat = props => {
 			setUsers(currentUsers);
 		});
 
-		socket.current.on('callingUser', data => {
+		socket.current.on('receivingCall', data => {
 			setReceivingCall(true);
 			setCaller(data.from);
 			setCallerSignal(data.signal);
@@ -156,16 +182,58 @@ const VideoChat = props => {
 		});
 	};
 
+	const toggleVideo = () => {
+		setShowVideo(!showVideo);
+		navigator.mediaDevices.getUserMedia({ video: showVideo, audio: true })
+			.then(currentStream => {
+				setStream(currentStream);
+				if (userVideo.current) {
+					userVideo.current.srcObject = currentStream;
+				}
+			});
+	};
+
 	useEffect(initSocket, []);
+	const container = {
+		height: '30em',
+		display: 'flex',
+		flexFlow: 'row nowrap',
+		border: '1px solid blue',
+	};
 	return (
-		<div>
+		<div style={container}>
+
 			{receivingCall
 				? <IncomingCall ignoreCall={ignoreCall} acceptCall={acceptCall} caller={caller} />
 				: ''
 			}
-			<FriendsList users={users} yourID={yourID} callPeer={callPeer} />
-			{stream ? <video playsInline muted ref={userVideo} autoPlay /> : ''}
-			{incomingVideo()}
+
+			<div style={{ border: '1px solid red', height: '100%', width: '30%' }}>
+				<FriendsList users={users} yourID={yourID} callPeer={callPeer} />
+			</div>
+
+			<div style={{ border: '1px solid green', height: '100%', width: '30%' }}>
+				<ChatWindow />
+			</div>
+
+			<div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
+				{stream
+					? <video
+						playsInline
+						muted
+						ref={userVideo}
+						autoPlay
+						style={{ height: 300, width: 'auto' }}
+					/>
+					: ''
+				}
+				<Button variant="primary" onClick={toggleVideo}>Toggle Video</Button>
+			</div>
+
+			<div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
+				{incomingVideo()}
+			</div>
+
 		</div>
 	);
 };
