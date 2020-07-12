@@ -21,7 +21,6 @@ const VideoChat = props => {
 	const [caller, setCaller] = useState('');
 	const [callerSignal, setCallerSignal] = useState();
 	const [callAccepted, setCallAccepted] = useState(false);
-	const [showVideo, setShowVideo] = useState(false);
 
 	const config = {
 		iceServers: [
@@ -38,35 +37,17 @@ const VideoChat = props => {
 		],
 	};
 
-	const allPeers = {
-		startCall: new Peer({
-			initiator: true,
-			trickle: false,
-			config,
-			stream,
-		}),
-		acceptCall: new Peer({
-			initiator: false,
-			trickle: false,
-			stream,
-		}),
-		ignoreCall: new Peer({
-			initiator: false,
-			trickle: false,
-		}),
-		endCall: new Peer({
-			initiator: false,
-			trickle: false,
-			stream,
-		}),
-	};
-
 	const userVideo = useRef();
 	const partnerVideo = useRef();
 	const socket = useRef();
 
 	const callPeer = id => {
-		const peer = allPeers.startCall;
+		const peer = new Peer({
+			initiator: true,
+			trickle: false,
+			config,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
@@ -88,7 +69,11 @@ const VideoChat = props => {
 
 	const acceptCall = () => {
 		setCallAccepted(true);
-		const peer = allPeers.acceptCall;
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
@@ -103,7 +88,10 @@ const VideoChat = props => {
 
 	const ignoreCall = () => {
 		setCallAccepted(false);
-		const peer = allPeers.ignoreCall;
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 		peer.on('signal', data => {
@@ -116,14 +104,16 @@ const VideoChat = props => {
 	const endCall = () => {
 		setCallAccepted(false);
 		setReceivingCall(false);
-		const peer = allPeers.endCall;
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 		peer.on('signal', () => {
 			socket.current.emit('endCall', { to: caller });
 		});
-
-		Object.keys(allPeers).forEach(p => { allPeers[p].destroy(); });
 	};
 
 	const incomingVideo = () => {
@@ -145,13 +135,13 @@ const VideoChat = props => {
 
 	const initSocket = () => {
 		socket.current = io.connect('localhost:8000/');
-		// navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-		// 	.then(currentStream => {
-		// 		setStream(currentStream);
-		// 		if (userVideo.current) {
-		// 			userVideo.current.srcObject = currentStream;
-		// 		}
-		// 	});
+		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+			.then(currentStream => {
+				setStream(currentStream);
+				if (userVideo.current) {
+					userVideo.current.srcObject = currentStream;
+				}
+			});
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
@@ -180,17 +170,6 @@ const VideoChat = props => {
 			endCall();
 			console.log('callEnded');
 		});
-	};
-
-	const toggleVideo = () => {
-		setShowVideo(!showVideo);
-		navigator.mediaDevices.getUserMedia({ video: showVideo, audio: true })
-			.then(currentStream => {
-				setStream(currentStream);
-				if (userVideo.current) {
-					userVideo.current.srcObject = currentStream;
-				}
-			});
 	};
 
 	useEffect(initSocket, []);
@@ -227,7 +206,7 @@ const VideoChat = props => {
 					/>
 					: ''
 				}
-				<Button variant="primary" onClick={toggleVideo}>Toggle Video</Button>
+				{/* <Button variant="primary" onClick={toggleVideo}>Toggle Video</Button> */}
 			</div>
 
 			<div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
