@@ -8,6 +8,7 @@ const container = {
 	top: 55,
 	right: 0,
 	minHeight: '200px',
+	zIndex: 1000,
 };
 
 const toast = {
@@ -15,6 +16,7 @@ const toast = {
 	top: 0,
 	right: 0,
 	minWidth: '300px',
+	zIndex: 1000,
 };
 
 const IncomingCall = props => {
