@@ -102,18 +102,23 @@ const VideoChat = props => {
 	};
 
 	const endCall = () => {
-		setCallAccepted(false);
-		setReceivingCall(false);
 		const peer = new Peer({
-			initiator: false,
+			initiator: true,
 			trickle: false,
-			stream,
 		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 		peer.on('signal', () => {
 			socket.current.emit('endCall', { to: caller });
 		});
+		socket.current.on('callEnded', () => {
+			console.log('callEnded');
+		});
+		console.log('resetting state...');
+		setCallAccepted(false);
+		setReceivingCall(false);
+		setCaller(null);
+		setCallerSignal(null);
 	};
 
 	const incomingVideo = () => {
@@ -163,12 +168,9 @@ const VideoChat = props => {
 			setCallerSignal(data.signal);
 		});
 
-		socket.current.on('callEnded', data => {
-			setReceivingCall(false);
-			setCaller(data.from);
-			setCallerSignal(data.signal);
+		socket.current.on('callEnded', () => {
+			console.log('ending call...');
 			endCall();
-			console.log('callEnded');
 		});
 	};
 
