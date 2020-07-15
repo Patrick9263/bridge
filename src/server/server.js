@@ -60,6 +60,12 @@ io.on('connection', socket => {
 		});
 		console.log(`user ${socket.id} ended call.`);
 	});
+
+	socket.on('sendMsg', data => {
+		io.to(data.userIdToSend).emit('rcvMsg', {
+			message: data.message, from: data.from, signal: data.signalData,
+		});
+	});
 });
 
 const port = 8000;

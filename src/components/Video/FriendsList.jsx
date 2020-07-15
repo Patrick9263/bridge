@@ -29,16 +29,24 @@ const FriendsList = props => {
 		setUserList(Object.keys(props.users).map(key => {
 			if (key !== props.yourID) {
 				return (
-					<ListGroup.Item key={`${key}_`} >
-						<div key={`${key}__`} style={styles.friend} >
-							<p key={`${key}___`}>{key}</p>
+					<ListGroup.Item key={`${key}_ListGroupItem`} >
+						<div key={`${key}_div`} style={styles.friend} >
+							<p key={`${key}_p`}>{key}</p>
 							<Button
-								key={key}
+								key={`${key}_chat`}
+								variant="primary"
+								onClick={() => props.messagePeer(key)}
+								style={{ width: '50' }}
+							>
+								Chat
+							</Button>
+							<Button
+								key={`${key}_call`}
 								variant="success"
 								onClick={() => props.callPeer(key)}
 								style={{ width: '50' }}
 							>
-								Chat
+								Call
 							</Button>
 						</div>
 					</ListGroup.Item>
@@ -46,7 +54,7 @@ const FriendsList = props => {
 			}
 			return '';
 		}));
-	}, [props.users, props.callPeer, props.yourID]);
+	}, [props.users, props.callPeer, props.messagePeer, props.yourID]);
 
 	return (
 		<ListGroup style={styles.userList}>

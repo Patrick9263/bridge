@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
+
 import {
 	Button, Form, FormControl, InputGroup,
 } from 'react-bootstrap';
@@ -22,9 +23,6 @@ const VideoChat = props => {
 	const [caller, setCaller] = useState('');
 	const [callerSignal, setCallerSignal] = useState();
 	const [callAccepted, setCallAccepted] = useState(false);
-	const [messageList, setMessageList] = useState([]);
-	const [newMessage, setNewMessage] = useState('');
-	const [peerID, setPeerID] = useState();
 
 	const config = {
 		iceServers: [
@@ -46,12 +44,23 @@ const VideoChat = props => {
 	const socket = useRef();
 
 	const callPeer = id => {
-		const peer = new Peer({ initiator: true });
+		const peer = new Peer({
+			initiator: true,
+			trickle: false,
+			config,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
 		peer.on('signal', data => {
 			socket.current.emit('callUser', { userIdToCall: id, signalData: data, from: yourID });
+		});
+
+		peer.on('stream', currentStream => {
+			if (partnerVideo.current) {
+				partnerVideo.current.srcObject = currentStream;
+			}
 		});
 
 		socket.current.on('callAccepted', signal => {
@@ -62,13 +71,21 @@ const VideoChat = props => {
 
 	const acceptCall = () => {
 		setCallAccepted(true);
-		const peer = new Peer();
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
 		peer.on('signal', data => {
 			socket.current.emit('acceptCall', { signal: data, to: caller });
 		});
+		peer.on('stream', currentStream => {
+			partnerVideo.current.srcObject = currentStream;
+		});
+		peer.signal(callerSignal);
 	};
 
 	const ignoreCall = () => {
@@ -123,18 +140,15 @@ const VideoChat = props => {
 		return '';
 	};
 
-	const addToMessageList = (newAuthor, newTime, aNewMessage) => {
-		// eslint-disable-next-line no-shadow
-		setMessageList(messageList => messageList.concat([{
-			author: newAuthor,
-			time: newTime,
-			message: aNewMessage,
-		}]));
-		setNewMessage('');
-	};
-
 	const initSocket = () => {
 		socket.current = io.connect('localhost:8000/');
+		navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+			.then(currentStream => {
+				setStream(currentStream);
+				if (userVideo.current) {
+					userVideo.current.srcObject = currentStream;
+				}
+			});
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
@@ -160,31 +174,19 @@ const VideoChat = props => {
 			console.log('ending call...');
 			endCall();
 		});
-
-		socket.current.on('rcvMsg', data => {
-			console.log(`receiving message: ${data.message}`);
-			addToMessageList('them', 'now', data.message);
-		});
 	};
+
+	const [messageList, setMessageList] = useState([]);
+	const [newMessage, setNewMessage] = useState('');
 
 	const handleSubmit = event => {
 		event.preventDefault();
-
-		const peer = new Peer({ initiator: true });
-		peer.on('close', () => { peer.destroy(); console.log('peer destroyed'); });
-		peer.on('error', () => { console.log('disconnected from peer'); });
-
-		peer.on('signal', data => {
-			socket.current.emit('sendMsg', {
-				userIdToSend: peerID, signalData: data, from: yourID, message: newMessage,
-			});
-			peer.signal({});
-		});
-
-		peer.on('connect', () => {
-			peer.send(newMessage);
-		});
-		addToMessageList('me', 'now', newMessage);
+		setMessageList([...messageList,
+			{
+				author: 'me',
+				time: 'now',
+				message: newMessage,
+			}]);
 	};
 
 	const handleOnChange = event => setNewMessage(event.target.value);
@@ -225,7 +227,22 @@ const VideoChat = props => {
 			: <div key={index} style={msgFromThem}>{msg.message}</div>
 	));
 
-	useEffect(initSocket, []);
+	useEffect(() => {
+		initSocket();
+
+		setMessageList([
+			{
+				author: 'me',
+				time: 'now',
+				message: 'hi',
+			},
+			{
+				author: 'them',
+				time: 'now',
+				message: 'hey',
+			},
+		]);
+	}, []);
 	const container = {
 		height: '30em',
 		display: 'flex',
@@ -240,7 +257,7 @@ const VideoChat = props => {
 				: ''
 			}
 			<div style={{ border: '1px solid red', height: '100%', width: '30%' }}>
-				<FriendsList users={users} yourID={yourID} messagePeer={setPeerID} callPeer={callPeer} />
+				<FriendsList users={users} yourID={yourID} callPeer={callPeer} />
 			</div>
 
 			<div style={{ border: '1px solid green', height: '100%', width: '30%' }}>
