@@ -46,12 +46,23 @@ const VideoChat = props => {
 	const socket = useRef();
 
 	const callPeer = id => {
-		const peer = new Peer({ initiator: true });
+		const peer = new Peer({
+			initiator: true,
+			trickle: false,
+			config,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
 		peer.on('signal', data => {
 			socket.current.emit('callUser', { userIdToCall: id, signalData: data, from: yourID });
+		});
+
+		peer.on('stream', currentStream => {
+			if (partnerVideo.current) {
+				partnerVideo.current.srcObject = currentStream;
+			}
 		});
 
 		socket.current.on('callAccepted', signal => {
@@ -62,13 +73,21 @@ const VideoChat = props => {
 
 	const acceptCall = () => {
 		setCallAccepted(true);
-		const peer = new Peer();
+		const peer = new Peer({
+			initiator: false,
+			trickle: false,
+			stream,
+		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
 		peer.on('signal', data => {
 			socket.current.emit('acceptCall', { signal: data, to: caller });
 		});
+		peer.on('stream', currentStream => {
+			partnerVideo.current.srcObject = currentStream;
+		});
+		peer.signal(callerSignal);
 	};
 
 	const ignoreCall = () => {
@@ -135,6 +154,13 @@ const VideoChat = props => {
 
 	const initSocket = () => {
 		socket.current = io.connect('localhost:8000/');
+		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+			.then(currentStream => {
+				setStream(currentStream);
+				if (userVideo.current) {
+					userVideo.current.srcObject = currentStream;
+				}
+			});
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
@@ -170,21 +196,23 @@ const VideoChat = props => {
 	const handleSubmit = event => {
 		event.preventDefault();
 
-		const peer = new Peer({ initiator: true });
-		peer.on('close', () => { peer.destroy(); console.log('peer destroyed'); });
-		peer.on('error', () => { console.log('disconnected from peer'); });
+		if (newMessage.length > 0) {
+			const peer = new Peer({ initiator: true });
+			peer.on('close', () => { peer.destroy(); console.log('peer destroyed'); });
+			peer.on('error', () => { console.log('disconnected from peer'); });
 
-		peer.on('signal', data => {
-			socket.current.emit('sendMsg', {
-				userIdToSend: peerID, signalData: data, from: yourID, message: newMessage,
+			peer.on('signal', data => {
+				socket.current.emit('sendMsg', {
+					userIdToSend: peerID, signalData: data, from: yourID, message: newMessage,
+				});
+				peer.signal({});
 			});
-			peer.signal({});
-		});
 
-		peer.on('connect', () => {
-			peer.send(newMessage);
-		});
-		addToMessageList('me', 'now', newMessage);
+			peer.on('connect', () => {
+				peer.send(newMessage);
+			});
+			addToMessageList('me', 'now', newMessage);
+		}
 	};
 
 	const handleOnChange = event => setNewMessage(event.target.value);
