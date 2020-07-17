@@ -58,6 +58,7 @@ const FriendsList = props => {
 
 	return (
 		<ListGroup style={styles.userList}>
+			<ListGroup.Item>{props.yourID}</ListGroup.Item>
 			{userList}
 		</ListGroup>
 	);

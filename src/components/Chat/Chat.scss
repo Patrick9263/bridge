@@ -1,0 +1,35 @@
+.container {
+	display: grid;
+	grid-template: 1 / 3;
+}
+
+.friendsList {
+	border: 1px solid red;
+	grid-area: 1 / 1 / 1 / 1;
+}
+
+.messageContainer {
+	grid-area: 1 / 2 / 1 / 2;
+		border: 1px solid green;
+}
+
+%messageStyle {
+		padding: 10;
+		word-break: break-word;
+		color: #f7f9fe;
+		margin-bottom: 20;
+		border-radius: 25px;
+		background-color: #2e70da;
+}
+
+.msgFromMe {
+		@extend %messageStyle;
+		background-color: #2e70da;
+		padding-right: 30;
+}
+
+.msgFromThem {
+		@extend %messageStyle;
+		background-color: #555555;
+		padding-left: 30;
+}

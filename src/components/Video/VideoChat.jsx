@@ -2,11 +2,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import Peer from 'simple-peer';
 import {
-	Button, Form, FormControl, InputGroup,
+	Button, Form, FormControl, InputGroup, Card,
 } from 'react-bootstrap';
 import IncomingCall from './IncomingCall.jsx';
 import FriendsList from './FriendsList.jsx';
-import ChatWindow from './ChatWindow.jsx';
 
 // https://github.com/coding-with-chaim/react-video-chat
 
@@ -164,7 +163,6 @@ const VideoChat = props => {
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
-			props.setId(id);
 		});
 		socket.current.on('allUsers', currentUsers => {
 			setUsers(currentUsers);
@@ -220,15 +218,18 @@ const VideoChat = props => {
 	const messageContainer = {
 		display: 'flex',
 		flexFlow: 'column wrap',
-		width: '100%',
-		padding: '10%',
+		alignItems: 'center',
+		justifyContent: 'flex-end',
+		width: '35vw',
+		height: '100%',
+		border: '1px solid green',
 	};
 	const messageStyle = {
 		display: 'flex',
 		flexFlow: 'row wrap',
 		padding: 10,
 		wordBreak: 'break-word',
-		width: '100%',
+		width: '50%',
 		justifyContent: 'space-between',
 		color: '#f7f9fe',
 		marginBottom: 20,
@@ -255,10 +256,10 @@ const VideoChat = props => {
 
 	useEffect(initSocket, []);
 	const container = {
-		height: '30em',
+		height: '80vh',
 		display: 'flex',
 		flexFlow: 'row nowrap',
-		border: '1px solid blue',
+		// border: '1px solid blue',
 	};
 	return (
 		<div style={container}>
@@ -267,38 +268,27 @@ const VideoChat = props => {
 				? <IncomingCall ignoreCall={ignoreCall} acceptCall={acceptCall} caller={caller} />
 				: ''
 			}
-			<div style={{ border: '1px solid red', height: '100%', width: '30%' }}>
+			<div style={{ border: '1px solid red', height: '100%', width: '30vw' }}>
 				<FriendsList users={users} yourID={yourID} messagePeer={setPeerID} callPeer={callPeer} />
 			</div>
 
-			<div style={{ border: '1px solid green', height: '100%', width: '30%' }}>
+			<div style={messageContainer}>
+				{messageListStyle}
 
-				<div style={messageContainer}>
-					{messageListStyle}
-
-					<Form inline onSubmit={handleSubmit}>
-
-						<Form.Control
-							className="mb-2 mr-sm-2"
-							id="inlineFormInputName2"
-							placeholder="Message"
-							value={newMessage}
-							onChange={handleOnChange}
-						/>
-
-						<Button type="submit" className="mb-2">
-						Send
-						</Button>
-					</Form>
-				</div>
+				<Form inline onSubmit={handleSubmit} style={{ width: '100%' }}>
+					<Form.Control
+						style={{ width: '100%' }}
+						id="inlineFormInputName2"
+						placeholder="Message"
+						value={newMessage}
+						onChange={handleOnChange}
+					/>
+				</Form>
 			</div>
 
-			{/* <div style={{ border: '1px solid green', height: '100%', width: '30%' }}>
-				<ChatWindow />
-			</div> */
-			}
-
-			<div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
+			<div style={{
+				width: '35vw', display: 'flex', flexFlow: 'column nowrap', border: '1px solid blue',
+			}}>
 				{stream
 					? <video
 						playsInline
@@ -310,9 +300,6 @@ const VideoChat = props => {
 					: ''
 				}
 				{/* <Button variant="primary" onClick={toggleVideo}>Toggle Video</Button> */}
-			</div>
-
-			<div style={{ display: 'flex', flexFlow: 'column nowrap' }}>
 				{incomingVideo()}
 			</div>
 
