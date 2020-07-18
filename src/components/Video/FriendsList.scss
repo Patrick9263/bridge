@@ -1,0 +1,13 @@
+.userList {
+	display: flex;
+	flex-direction: column;
+	color: white;
+	width: 100%;
+}
+
+.friend {
+	display: grid;
+	grid-template:  1fr / 1fr 4em 1em 4em 1em;
+	align-items: center;
+	height: 100%;
+}

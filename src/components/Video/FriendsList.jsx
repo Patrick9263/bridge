@@ -1,42 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ListGroup } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import styles from './FriendsList.scss';
 
 const FriendsList = props => {
 	const [userList, setUserList] = useState('');
-
-	const styles = {
-		userList: {
-			display: 'flex',
-			flexDirection: 'column',
-			// borderStyle: 'solid',
-			// borderColor: 'black',
-			// borderWidth: '1px',
-			width: '100%',
-		},
-		friend: {
-			display: 'flex',
-			flexDirection: 'row',
-			justifyContent: 'space-between',
-			height: '100%',
-			// borderStyle: 'solid',
-			// borderColor: 'black',
-			// borderWidth: '1px',
-		},
-	};
 
 	useEffect(() => {
 		setUserList(Object.keys(props.users).map(key => {
 			if (key !== props.yourID) {
 				return (
-					<ListGroup.Item key={`${key}_ListGroupItem`} >
-						<div key={`${key}_div`} style={styles.friend} >
-							<p key={`${key}_p`}>{key}</p>
+					<div key={`${key}_FriendList`} >
+						<div key={`${key}_div`} className={styles.friend} >
+							<div key={`${key}_p`} style={{ gridArea: '1/1/1/1', padding: '1em' }}>{key}</div>
 							<Button
 								key={`${key}_chat`}
 								variant="primary"
 								onClick={() => props.messagePeer(key)}
-								style={{ width: '50' }}
+								style={{ gridArea: '1/2/1/2' }}
 							>
 								Chat
 							</Button>
@@ -44,12 +25,12 @@ const FriendsList = props => {
 								key={`${key}_call`}
 								variant="success"
 								onClick={() => props.callPeer(key)}
-								style={{ width: '50' }}
+								style={{ gridArea: '1/4/1/4', marginLeft: '2m' }}
 							>
 								Call
 							</Button>
 						</div>
-					</ListGroup.Item>
+					</div>
 				);
 			}
 			return '';
@@ -57,10 +38,10 @@ const FriendsList = props => {
 	}, [props.users, props.callPeer, props.messagePeer, props.yourID]);
 
 	return (
-		<ListGroup style={styles.userList}>
-			<ListGroup.Item>{props.yourID}</ListGroup.Item>
+		<div className={styles.userList}>
+			<div style={{ bottom: 0, position: 'absolute' }}>{props.yourID}</div>
 			{userList}
-		</ListGroup>
+		</div>
 	);
 };
 

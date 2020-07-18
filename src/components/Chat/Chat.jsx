@@ -56,7 +56,7 @@ const Chat = props => {
 	useEffect(() => {
 		if (socket.current && renderCount === 0) {
 			socket.current.on('rcvMsg', data => {
-				addToMessageList('them', getTimeStamp(), data.message);
+				addToMessageList(data.from, getTimeStamp(), data.message);
 			});
 			setRenderCount(1);
 		}

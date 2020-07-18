@@ -29,7 +29,7 @@
 
 .messageStyle {
 	color: white;
-	padding: 2em;
+	padding: 5px;
 }
 
 .form {
@@ -38,11 +38,18 @@
 }
 
 .textBox {
+	color: white;
 	background-color: rgb(96, 96, 100);
 	width: 100%;
-	padding: 8px;
+	padding: 10px;
+
 	border-radius: 8px;
+	outline: none;
+	border-style: hidden hidden hidden hidden;
+}
+input:focus, textarea:focus, select:focus{
+	outline: none;
 }
 ::placeholder {
-  color: rgb(174, 174, 175);
+	color: rgb(174, 174, 175);
 }
