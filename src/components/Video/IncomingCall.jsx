@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-// import PropTypes from 'prop-types';
-
 import { Button, Toast } from 'react-bootstrap';
+import { getTimeStamp } from '../../api/tools';
+// import PropTypes from 'prop-types';
 
 const container = {
 	position: 'absolute',
@@ -21,11 +21,6 @@ const toast = {
 
 const IncomingCall = props => {
 	const [showToast, setShowToast] = useState(true);
-	const date = new Date();
-	// eslint-disable-next-line prefer-template
-	const timeStamp = date.getHours().toString()
-	+ ':' + date.getMinutes().toString()
-	+ ':' + date.getSeconds().toString();
 
 	const handleIgnore = () => {
 		props.ignoreCall();
@@ -44,7 +39,7 @@ const IncomingCall = props => {
 						<Toast.Header>
 							<img src="holder.js/20x20?text=%20" className="rounded mr-2" alt="" />
 							<strong className="mr-auto">Incoming call</strong>
-							<small>{timeStamp}</small>
+							<small>{getTimeStamp()}</small>
 						</Toast.Header>
 						<Toast.Body>
 							{props.caller}

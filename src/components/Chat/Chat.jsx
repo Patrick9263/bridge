@@ -1,18 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-import io from 'socket.io-client';
+import React, { useEffect, useState } from 'react';
 import Peer from 'simple-peer';
-import { Form } from 'react-bootstrap';
+import { getTimeStamp } from '../../api/tools';
 import styles from './Chat.scss';
 import FriendsList from '../Video/FriendsList.jsx';
 
-const ChatPage = () => {
-	const [yourID, setYourID] = useState('');
-	const [users, setUsers] = useState({});
-
+const Chat = props => {
+	const { socket, yourID, users } = props;
 	const [messageList, setMessageList] = useState([]);
 	const [newMessage, setNewMessage] = useState('');
 	const [peerID, setPeerID] = useState();
-	const socket = useRef();
+	const [renderCount, setRenderCount] = useState(0);
 
 	const addToMessageList = (newAuthor, newTime, aNewMessage) => {
 		// eslint-disable-next-line no-shadow
@@ -29,8 +26,6 @@ const ChatPage = () => {
 
 		if (newMessage.length > 0) {
 			const peer = new Peer({ initiator: true });
-			peer.on('close', () => { peer.destroy(); console.log('peer destroyed'); });
-			peer.on('error', () => { console.log('disconnected from peer'); });
 
 			peer.on('signal', data => {
 				socket.current.emit('sendMsg', {
@@ -38,34 +33,34 @@ const ChatPage = () => {
 				});
 				peer.signal({});
 			});
-
 			peer.on('connect', () => {
 				peer.send(newMessage);
 			});
-			addToMessageList('me', 'now', newMessage);
+			peer.on('close', () => { peer.destroy(); console.log('peer destroyed'); });
+			peer.on('error', () => { console.log('disconnected from peer'); });
+
+			addToMessageList('Me', getTimeStamp(), newMessage);
 		}
 	};
 
-	const messageListStyle = messageList.map((msg, index) => {
-		const msgStyle = msg.author === 'me' ? styles.msgFromMe : styles.msgFromThem;
-		return <div key={index} className={msgStyle}>{msg.message}</div>;
-	});
+	const messages = messageList.map((msg, index) => (
+		<div key={index} className={styles.messageStyle}>
+			<div style={{ display: 'flex' }}>
+				<div style={{ fontWeight: 700, marginRight: 10 }}>{msg.author}</div>
+				<div style={{ color: 'grey' }}>{'  at  '}{msg.time}</div>
+			</div>
+			<p>{msg.message}</p>
+		</div>
+	));
 
 	useEffect(() => {
-		socket.current = io.connect('localhost:8000/');
-
-		socket.current.on('yourID', id => {
-			setYourID(id);
-		});
-		socket.current.on('allUsers', currentUsers => {
-			setUsers(currentUsers);
-		});
-
-		socket.current.on('rcvMsg', data => {
-			console.log(`receiving message: ${data.message}`);
-			addToMessageList('them', 'now', data.message);
-		});
-	}, []);
+		if (socket.current && renderCount === 0) {
+			socket.current.on('rcvMsg', data => {
+				addToMessageList('them', getTimeStamp(), data.message);
+			});
+			setRenderCount(1);
+		}
+	}, [socket, yourID, users]);
 	return (
 		<>
 			<div className={styles.container}>
@@ -74,18 +69,20 @@ const ChatPage = () => {
 					<FriendsList users={users} yourID={yourID} messagePeer={setPeerID} callPeer={() => {}} />
 				</div>
 
-				<div className={styles.messageContainer}>
-					{messageListStyle}
+				<div className={styles.chatContainer}>
+					<div className={styles.chatBox}>
 
-					<Form inline onSubmit={handleSubmit} style={{ width: '100%' }}>
-						<Form.Control
-							style={{ width: '100%' }}
-							id="inlineFormInputName2"
-							placeholder="Message"
-							value={newMessage}
-							onChange={event => setNewMessage(event.target.value)}
-						/>
-					</Form>
+						<div className={styles.messageList}>{messages}</div>
+						<form onSubmit={handleSubmit} className={styles.form}>
+							<input
+								type="text"
+								className={styles.textBox}
+								placeholder="Message"
+								value={newMessage}
+								onChange={event => setNewMessage(event.target.value)}
+							/>
+						</form>
+					</div>
 				</div>
 
 			</div>
@@ -93,4 +90,4 @@ const ChatPage = () => {
 	);
 };
 
-export default ChatPage;
+export default Chat;
