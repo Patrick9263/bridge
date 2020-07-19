@@ -3,9 +3,12 @@ import Peer from 'simple-peer';
 import { getTimeStamp } from '../../api/tools';
 import styles from './Chat.scss';
 import FriendsList from '../Video/FriendsList.jsx';
+import VideoChat from '../Video/VideoChat.jsx';
 
 const Chat = props => {
-	const { socket, yourID, users } = props;
+	const {
+		socket, yourID, users, partnerVideo,
+	} = props;
 	const [messageList, setMessageList] = useState([]);
 	const [newMessage, setNewMessage] = useState('');
 	const [peerID, setPeerID] = useState();
@@ -43,6 +46,7 @@ const Chat = props => {
 		}
 	};
 
+	// Make new component eventually
 	const messages = messageList.map((msg, index) => (
 		<div key={index} className={styles.messageStyle}>
 			<div style={{ display: 'flex' }}>
@@ -84,6 +88,8 @@ const Chat = props => {
 						</form>
 					</div>
 				</div>
+
+				<VideoChat socket={socket} yourID={yourID} partnerVideo={partnerVideo} />
 
 			</div>
 		</>

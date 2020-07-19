@@ -38,9 +38,9 @@ const FriendsList = props => {
 	}, [props.users, props.callPeer, props.messagePeer, props.yourID]);
 
 	return (
-		<div className={styles.userList}>
-			<div style={{ bottom: 0, position: 'absolute' }}>{props.yourID}</div>
-			{userList}
+		<div className={styles.sideBar}>
+			<div className={styles.userList}>{userList}</div>
+			<div className={styles.yourID}>{props.yourID}</div>
 		</div>
 	);
 };

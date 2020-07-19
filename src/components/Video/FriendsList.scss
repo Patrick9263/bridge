@@ -1,4 +1,10 @@
+.sideBar {
+	display: grid;
+	grid-template: 1fr 3em / 1fr;
+}
+
 .userList {
+	grid-area: 1/1/1/1;
 	display: flex;
 	flex-direction: column;
 	color: white;
@@ -10,4 +16,12 @@
 	grid-template:  1fr / 1fr 4em 1em 4em 1em;
 	align-items: center;
 	height: 100%;
+}
+
+.yourID {
+	display: grid;
+	place-items: center;
+	color: white;
+	background-color: rgb(67, 67, 68);
+	width: 100%;
 }

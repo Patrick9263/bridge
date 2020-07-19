@@ -3,7 +3,6 @@ import io from 'socket.io-client';
 import Peer from 'simple-peer';
 import { Button } from 'react-bootstrap';
 import IncomingCall from './IncomingCall.jsx';
-import FriendsList from './FriendsList.jsx';
 
 // https://github.com/coding-with-chaim/react-video-chat
 
@@ -17,7 +16,7 @@ const VideoChat = props => {
 	const [caller, setCaller] = useState('');
 	const [callerSignal, setCallerSignal] = useState();
 	const [callAccepted, setCallAccepted] = useState(false);
-	const { socket, yourID } = props;
+	const { socket, yourID, partnerVideo } = props;
 
 	const config = {
 		iceServers: [
@@ -35,7 +34,6 @@ const VideoChat = props => {
 	};
 
 	const userVideo = useRef();
-	const partnerVideo = useRef();
 
 	const callPeer = id => {
 		const peer = new Peer({
@@ -134,8 +132,7 @@ const VideoChat = props => {
 		return '';
 	};
 
-	const initSocket = () => {
-		socket.current = io.connect('localhost:8000/');
+	useEffect(() => {
 		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 			.then(currentStream => {
 				setStream(currentStream);
@@ -144,29 +141,27 @@ const VideoChat = props => {
 				}
 			});
 
-		socket.current.on('receivingCall', data => {
-			setReceivingCall(true);
-			setCaller(data.from);
-			setCallerSignal(data.signal);
-		});
+		if (socket.current) {
+			socket.current.on('receivingCall', data => {
+				setReceivingCall(true);
+				setCaller(data.from);
+				setCallerSignal(data.signal);
+			});
 
-		socket.current.on('callIgnored', data => {
-			setReceivingCall(false);
-			setCaller(data.from);
-			setCallerSignal(data.signal);
-		});
+			socket.current.on('callIgnored', data => {
+				setReceivingCall(false);
+				setCaller(data.from);
+				setCallerSignal(data.signal);
+			});
 
-		socket.current.on('callEnded', () => {
-			console.log('ending call...');
-			endCall();
-		});
-	};
-
-	useEffect(initSocket, []);
+			socket.current.on('callEnded', () => {
+				console.log('ending call...');
+				endCall();
+			});
+		}
+	}, [socket, yourID, partnerVideo]);
 	const container = {
-		height: '80vh',
-		display: 'flex',
-		flexFlow: 'row nowrap',
+		height: '100px',
 	};
 	return (
 		<div style={container}>
@@ -176,22 +171,17 @@ const VideoChat = props => {
 				: ''
 			}
 
-			<div style={{
-				width: '35vw', display: 'flex', flexFlow: 'column nowrap', border: '1px solid blue',
-			}}>
-				{stream
-					? <video
-						playsInline
-						muted
-						ref={userVideo}
-						autoPlay
-						style={{ height: 300, width: 'auto' }}
-					/>
-					: ''
-				}
-				{/* <Button variant="primary" onClick={toggleVideo}>Toggle Video</Button> */}
-				{incomingVideo()}
-			</div>
+			{stream
+				? <video
+					playsInline
+					muted
+					ref={userVideo}
+					autoPlay
+					style={{ height: 300, width: 'auto' }}
+				/>
+				: ''
+			}
+			{incomingVideo()}
 
 		</div>
 	);
