@@ -11,55 +11,12 @@ import IncomingCall from './IncomingCall.jsx';
 // https://reactjs.org/docs/render-props.html
 
 const VideoChat = props => {
-	const [stream, setStream] = useState();
 	const [receivingCall, setReceivingCall] = useState(false);
 	const [caller, setCaller] = useState('');
 	const [callerSignal, setCallerSignal] = useState();
-	const [callAccepted, setCallAccepted] = useState(false);
-	const { socket, yourID, partnerVideo } = props;
-
-	const config = {
-		iceServers: [
-			{
-				urls: 'stun:numb.viagenie.ca',
-				username: 'sultan1640@gmail.com',
-				credential: '98376683',
-			},
-			{
-				urls: 'turn:numb.viagenie.ca',
-				username: 'sultan1640@gmail.com',
-				credential: '98376683',
-			},
-		],
-	};
-
-	const userVideo = useRef();
-
-	const callPeer = id => {
-		const peer = new Peer({
-			initiator: true,
-			trickle: false,
-			config,
-			stream,
-		});
-		peer.on('close', () => { peer.destroy(); });
-		peer.on('error', () => { console.log('disconnected from peer'); });
-
-		peer.on('signal', data => {
-			socket.current.emit('callUser', { userIdToCall: id, signalData: data, from: yourID });
-		});
-
-		peer.on('stream', currentStream => {
-			if (partnerVideo.current) {
-				partnerVideo.current.srcObject = currentStream;
-			}
-		});
-
-		socket.current.on('callAccepted', signal => {
-			setCallAccepted(true);
-			peer.signal(signal);
-		});
-	};
+	const {
+		socket, yourID, partnerVideo, callAccepted, setCallAccepted, stream, userVideo,
+	} = props;
 
 	const acceptCall = () => {
 		setCallAccepted(true);
@@ -133,14 +90,6 @@ const VideoChat = props => {
 	};
 
 	useEffect(() => {
-		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-			.then(currentStream => {
-				setStream(currentStream);
-				if (userVideo.current) {
-					userVideo.current.srcObject = currentStream;
-				}
-			});
-
 		if (socket.current) {
 			socket.current.on('receivingCall', data => {
 				setReceivingCall(true);

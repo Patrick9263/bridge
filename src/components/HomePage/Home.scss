@@ -5,3 +5,14 @@
 	margin: 0;
 	height: 100vh;
 }
+
+.container {
+	display: grid;
+	grid-template: 1fr / 25em 1fr;
+}
+
+.friendsList {
+	display: grid;
+	background-color: rgb(73, 73, 75);
+	grid-area: 1 / 1 / 1 / 1;
+}

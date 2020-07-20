@@ -49,6 +49,7 @@ FriendsList.propTypes = {
 	users:	PropTypes.object,
 	yourID:	PropTypes.string,
 	callPeer:	PropTypes.func,
+	messagePeer:	PropTypes.func,
 };
 
 export default FriendsList;
