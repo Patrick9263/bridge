@@ -1,0 +1,51 @@
+.noselect {
+	text-align: center;
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently
+																	supported by Chrome, Opera and Firefox */
+}
+
+.navBar {
+	display: grid;
+	grid-area: 1 / 1 / 1 / 1;
+}
+
+.navBarContainer {
+	display: grid;
+	grid-template: 1fr / 5em 1fr 1fr 5em;
+	align-items: center;
+}
+
+.linkListContainer {
+	grid-area: 1 / 3 / 1 / 4;
+	font-weight: 500;
+}
+
+.linkList {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: space-evenly;
+}
+
+.navLinks {
+	color: white;
+}
+
+$transitionSpeed: 0.1s;
+.navLinks:hover {
+	color: white;
+	text-shadow: 0px 0px 15px white;
+	-moz-transition: all $transitionSpeed ease-in;
+	-o-transition: all $transitionSpeed ease-in;
+	-webkit-transition: all $transitionSpeed ease-in;
+	transition: all $transitionSpeed ease-in;
+}
+
+.logo {
+	grid-area: 1 / 2 / 1 / 3;
+	height: 100%;
+}

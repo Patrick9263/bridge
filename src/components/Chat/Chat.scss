@@ -1,0 +1,55 @@
+.container {
+	display: grid;
+	grid-template: 1fr / 25em 1fr;
+}
+
+.friendsList {
+	display: grid;
+	background-color: rgb(73, 73, 75);
+	grid-area: 1 / 1 / 1 / 1;
+}
+
+.chatContainer {
+	display: grid;
+	grid-area: 1 / 2 / 1 / 2;
+	background-color: rgb(79, 78, 82);
+}
+
+.chatBox {
+	display: grid;
+	grid-template: 1fr 4em / 1fr;
+}
+
+.messageList {
+	display: flex;
+	flex-flow: column wrap;
+	justify-content: flex-end;
+	padding: 1em 1em 1em 1em;
+}
+
+.messageStyle {
+	color: white;
+	padding: 5px;
+}
+
+.form {
+	justify-self: center;
+	width: 90%;
+}
+
+.textBox {
+	color: white;
+	background-color: rgb(96, 96, 100);
+	width: 100%;
+	padding: 10px;
+
+	border-radius: 8px;
+	outline: none;
+	border-style: hidden hidden hidden hidden;
+}
+input:focus, textarea:focus, select:focus{
+	outline: none;
+}
+::placeholder {
+	color: rgb(174, 174, 175);
+}

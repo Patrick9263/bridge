@@ -4,25 +4,26 @@ module.exports = {
 	root: true,
 	extends: 'airbnb-base',
 	parser: 'babel-eslint',
-	"parserOptions": {
-		"ecmaVersion": 2018,
-		"sourceType": "module",
-		"ecmaFeatures": {
-			"jsx": true
-		}
+	parserOptions: {
+		ecmaVersion: 2018,
+		sourceType: 'module',
+		ecmaFeatures: {
+			jsx: true,
+		},
 	},
 	env: {
 		browser: true,
-		"node": true,
-		"es6": true,
-		"jest": true
+		node: true,
+		es6: true,
+		jest: true,
 	},
 	rules: {
 		'no-console': 0,
 		'arrow-parens': [2, 'as-needed'],
 		'func-names': 0,
 		'no-tabs': 0,
-		'indent': [2, 'tabs'],
+		'no-unused-vars': 0,
+		indent: [2, 'tab'],
 	},
 	overrides: [
 		{
@@ -35,7 +36,7 @@ module.exports = {
 			parserOptions: { sourceType: 'script' },
 			rules: {
 				strict: [2, 'global'],
-			}
+			},
 		},
 	],
 };
