@@ -6,6 +6,7 @@ import Chat from '../Chat/Chat.jsx';
 import FriendsList from '../Video/FriendsList.jsx';
 import VideoChat from '../Video/VideoChat.jsx';
 import styles from './Home.scss';
+import { getUserMedia } from '../../api/tools';
 
 const Home = () => {
 	const [yourID, setYourID] = useState('');
@@ -18,26 +19,24 @@ const Home = () => {
 	const partnerVideo = useRef();
 	const userVideo = useRef();
 
-	const config = {
-		iceServers: [
-			{
-				urls: 'stun:numb.viagenie.ca',
-				username: 'sultan1640@gmail.com',
-				credential: '98376683',
-			},
-			{
-				urls: 'turn:numb.viagenie.ca',
-				username: 'sultan1640@gmail.com',
-				credential: '98376683',
-			},
-		],
-	};
-
 	const callPeer = id => {
 		const peer = new Peer({
 			initiator: true,
 			trickle: false,
-			config,
+			config: {
+				iceServers: [
+					{
+						urls: 'stun:numb.viagenie.ca',
+						username: 'sultan1640@gmail.com',
+						credential: '98376683',
+					},
+					{
+						urls: 'turn:numb.viagenie.ca',
+						username: 'sultan1640@gmail.com',
+						credential: '98376683',
+					},
+				],
+			},
 			stream,
 		});
 		peer.on('close', () => { peer.destroy(); });
@@ -61,14 +60,8 @@ const Home = () => {
 
 	useEffect(() => {
 		socket.current = io.connect('localhost:8000/');
+		setStream(getUserMedia(false, true, userVideo));
 
-		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-			.then(currentStream => {
-				setStream(currentStream);
-				if (userVideo.current) {
-					userVideo.current.srcObject = currentStream;
-				}
-			});
 		socket.current.on('yourID', id => {
 			setYourID(id);
 		});
