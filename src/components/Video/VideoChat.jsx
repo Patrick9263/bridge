@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import io from 'socket.io-client';
+import React, { useEffect, useState } from 'react';
+import Draggable from 'react-draggable';
 import Peer from 'simple-peer';
 import { Button } from 'react-bootstrap';
 import IncomingCall from './IncomingCall.jsx';
@@ -75,15 +75,27 @@ const VideoChat = props => {
 	const incomingVideo = () => {
 		if (callAccepted) {
 			return (
-				<>
-					<video
-						playsInline
-						ref={partnerVideo}
-						autoPlay
-						style={{ height: 300, width: 'auto' }}
-					/>
-					<Button variant="danger" onClick={endCall}>End Call</Button>
-				</>
+				<Draggable>
+					<div style={{
+						display: 'flex',
+						flexFlow: 'column wrap',
+						zIndex: 900,
+						position: 'absolute',
+						bottom: 0,
+						right: 0,
+					}}>
+						<video
+							playsInline
+							ref={partnerVideo}
+							autoPlay
+							style={{
+								height: 300,
+								width: 'auto',
+							}}
+						/>
+						<Button variant="danger" onClick={endCall}>End Call</Button>
+					</div>
+				</Draggable>
 			);
 		}
 		return '';
@@ -109,11 +121,8 @@ const VideoChat = props => {
 			});
 		}
 	}, [socket, yourID, partnerVideo]);
-	const container = {
-		height: '100px',
-	};
 	return (
-		<div style={container}>
+		<>
 
 			{receivingCall
 				? <IncomingCall ignoreCall={ignoreCall} acceptCall={acceptCall} caller={caller} />
@@ -121,18 +130,27 @@ const VideoChat = props => {
 			}
 
 			{stream
-				? <video
-					playsInline
-					muted
-					ref={userVideo}
-					autoPlay
-					style={{ height: 300, width: 'auto' }}
-				/>
+				? <Draggable>
+					<video
+						playsInline
+						muted
+						ref={userVideo}
+						autoPlay
+						style={{
+							height: 100,
+							width: 'auto',
+							zIndex: 900,
+							position: 'absolute',
+							top: 0,
+							right: 0,
+						}}
+					/>
+				</Draggable>
 				: ''
 			}
 			{incomingVideo()}
 
-		</div>
+		</>
 	);
 };
 
