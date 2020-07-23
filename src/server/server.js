@@ -47,10 +47,8 @@ io.on('connection', socket => {
 
 	// User ignores call
 	socket.on('ignoreCall', data => {
-		io.to(data.to).emit('callIgnored', {
-			signal: data.signal, from: data.from,
-		});
-		// console.log(`user ${socket.id} ignored call`);
+		io.to(data.to).emit('callIgnored', data.signal);
+		console.log(`user ${socket.id} ignored call`);
 	});
 
 	// User ends call
@@ -61,6 +59,7 @@ io.on('connection', socket => {
 		console.log(`user ${socket.id} ended call.`);
 	});
 
+	// User sends message
 	socket.on('sendMsg', data => {
 		io.to(data.userIdToSend).emit('rcvMsg', {
 			message: data.message, from: data.from, signal: data.signalData,

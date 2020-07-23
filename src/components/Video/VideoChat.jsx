@@ -12,10 +12,11 @@ import IncomingCall from './IncomingCall.jsx';
 
 const VideoChat = props => {
 	const [receivingCall, setReceivingCall] = useState(false);
-	const [caller, setCaller] = useState('');
 	const [callerSignal, setCallerSignal] = useState();
+	const [renderCount, setRenderCount] = useState(0);
 	const {
-		socket, yourID, partnerVideo, callAccepted, setCallAccepted, stream, userVideo,
+		socket, yourID, partnerVideo, callAccepted, setCallAccepted,
+		stream, userVideo, peerID, setPeerID,
 	} = props;
 
 	const acceptCall = () => {
@@ -29,7 +30,7 @@ const VideoChat = props => {
 		peer.on('error', () => { console.log('disconnected from peer'); });
 
 		peer.on('signal', data => {
-			socket.current.emit('acceptCall', { signal: data, to: caller });
+			socket.current.emit('acceptCall', { signal: data, to: peerID });
 		});
 		peer.on('stream', currentStream => {
 			partnerVideo.current.srcObject = currentStream;
@@ -42,33 +43,37 @@ const VideoChat = props => {
 		const peer = new Peer({
 			initiator: false,
 			trickle: false,
+			stream,
 		});
 		peer.on('close', () => { peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
 		peer.on('signal', data => {
-			socket.current.emit('ignoreCall', { signal: data, to: caller });
+			socket.current.emit('ignoreCall', { signal: data, to: peerID });
 		});
 		peer.signal(callerSignal);
-		setReceivingCall(false);
+		console.log('called ignoreCall()...');
 	};
 
-	const endCall = () => {
+	const endCall = isInitiator => {
+		setCallAccepted(false);
 		const peer = new Peer({
-			initiator: true,
+			initiator: isInitiator,
 			trickle: false,
 		});
-		peer.on('close', () => { peer.destroy(); });
+		// eslint-disable-next-line no-unused-expressions
+		peer.on('close', () => { peer && peer.destroy(); });
 		peer.on('error', () => { console.log('disconnected from peer'); });
-		peer.on('signal', () => {
-			socket.current.emit('endCall', { to: caller });
-		});
+		if (isInitiator) {
+			peer.on('signal', data => {
+				socket.current.emit('endCall', { signal: data, to: peerID });
+			});
+		}
 		socket.current.on('callEnded', () => {
 			console.log('callEnded');
 		});
 		console.log('resetting state...');
-		setCallAccepted(false);
 		setReceivingCall(false);
-		setCaller(null);
+		setPeerID(null);
 		setCallerSignal(null);
 	};
 
@@ -93,7 +98,7 @@ const VideoChat = props => {
 								width: 'auto',
 							}}
 						/>
-						<Button variant="danger" onClick={endCall}>End Call</Button>
+						<Button variant="danger" onClick={() => endCall(true)}>End Call</Button>
 					</div>
 				</Draggable>
 			);
@@ -102,30 +107,31 @@ const VideoChat = props => {
 	};
 
 	useEffect(() => {
-		if (socket.current) {
+		if (socket.current && renderCount === 0) {
 			socket.current.on('receivingCall', data => {
 				setReceivingCall(true);
-				setCaller(data.from);
+				setPeerID(data.from);
 				setCallerSignal(data.signal);
 			});
 
 			socket.current.on('callIgnored', data => {
-				setReceivingCall(false);
-				setCaller(data.from);
+				// setReceivingCall(false);
+				setPeerID(data.from);
 				setCallerSignal(data.signal);
 			});
 
 			socket.current.on('callEnded', () => {
 				console.log('ending call...');
-				endCall();
+				endCall(false);
 			});
+			setRenderCount(0);
 		}
 	}, [socket, yourID, partnerVideo]);
 	return (
 		<>
 
 			{receivingCall
-				? <IncomingCall ignoreCall={ignoreCall} acceptCall={acceptCall} caller={caller} />
+				? <IncomingCall ignoreCall={ignoreCall} acceptCall={acceptCall} caller={peerID} />
 				: ''
 			}
 

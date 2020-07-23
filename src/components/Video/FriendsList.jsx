@@ -16,7 +16,7 @@ const FriendsList = props => {
 							<Button
 								key={`${key}_chat`}
 								variant="primary"
-								onClick={() => props.messagePeer(key)}
+								onClick={() => props.setPeerID(key)}
 								style={{ gridArea: '1/2/1/2' }}
 							>
 								Chat
@@ -35,7 +35,7 @@ const FriendsList = props => {
 			}
 			return '';
 		}));
-	}, [props.users, props.callPeer, props.messagePeer, props.yourID]);
+	}, [props.users, props.callPeer, props.setPeerID, props.yourID]);
 
 	return (
 		<div className={styles.sideBar}>
@@ -49,7 +49,7 @@ FriendsList.propTypes = {
 	users:	PropTypes.object,
 	yourID:	PropTypes.string,
 	callPeer:	PropTypes.func,
-	messagePeer:	PropTypes.func,
+	setPeerID:	PropTypes.func,
 };
 
 export default FriendsList;

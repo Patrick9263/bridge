@@ -6,7 +6,7 @@ import Chat from '../Chat/Chat.jsx';
 import FriendsList from '../Video/FriendsList.jsx';
 import VideoChat from '../Video/VideoChat.jsx';
 import styles from './Home.scss';
-import { getUserMedia } from '../../api/tools';
+import { getUserMedia, getDisplayMedia } from '../../api/tools';
 
 const Home = () => {
 	const [yourID, setYourID] = useState('');
@@ -23,20 +23,20 @@ const Home = () => {
 		const peer = new Peer({
 			initiator: true,
 			trickle: false,
-			config: {
-				iceServers: [
-					{
-						urls: 'stun:numb.viagenie.ca',
-						username: 'sultan1640@gmail.com',
-						credential: '98376683',
-					},
-					{
-						urls: 'turn:numb.viagenie.ca',
-						username: 'sultan1640@gmail.com',
-						credential: '98376683',
-					},
-				],
-			},
+			// config: {
+			// 	iceServers: [
+			// 		{
+			// 			urls: 'stun:numb.viagenie.ca',
+			// 			username: 'sultan1640@gmail.com',
+			// 			credential: '98376683',
+			// 		},
+			// 		{
+			// 			urls: 'turn:numb.viagenie.ca',
+			// 			username: 'sultan1640@gmail.com',
+			// 			credential: '98376683',
+			// 		},
+			// 	],
+			// },
 			stream,
 		});
 		peer.on('close', () => { peer.destroy(); });
@@ -55,12 +55,27 @@ const Home = () => {
 		socket.current.on('callAccepted', signal => {
 			setCallAccepted(true);
 			peer.signal(signal);
+			console.log('callAccepted...');
 		});
+
+		socket.current.on('callIgnored', signal => {
+			setCallAccepted(false);
+			peer.signal(signal);
+			console.log('callIgnored...');
+		});
+		setPeerID(id);
 	};
 
 	useEffect(() => {
 		socket.current = io.connect('localhost:8000/');
-		setStream(getUserMedia(false, true, userVideo));
+
+		navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+			.then(currentStream => {
+				setStream(currentStream);
+				if (userVideo.current) {
+					userVideo.current.srcObject = currentStream;
+				}
+			});
 
 		socket.current.on('yourID', id => {
 			setYourID(id);
@@ -77,7 +92,7 @@ const Home = () => {
 					<FriendsList
 						users={users}
 						yourID={yourID}
-						messagePeer={setPeerID}
+						setPeerID={setPeerID}
 						callPeer={callPeer}
 						peerID={peerID}
 					/>
@@ -96,6 +111,8 @@ const Home = () => {
 					setCallAccepted={setCallAccepted}
 					stream={stream}
 					userVideo={userVideo}
+					peerID={peerID}
+					setPeerID={id => setPeerID(id)}
 				/>
 			</div>
 		</div>
